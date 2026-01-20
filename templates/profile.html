@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% set title = "Profil" %}
+
+{% block content %}
+<section class="card card-wide">
+  <div class="card-head">
+    <h1>Profil</h1>
+    <p>Tu peux modifier tes infos et ton avatar.</p>
+  </div>
+
+  <div class="profile-row">
+    <img class="avatar big" src="{{ avatar }}" alt="Avatar">
+    <div class="mini">
+      <div class="mini-title">{{ user.first_name }} {{ user.last_name }}</div>
+      <div class="mini-sub">{{ user.email }}</div>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="form">
+    <div class="row2">
+      <label class="field">
+        <span>Prénom</span>
+        <input name="first_name" value="{{ user.first_name }}" required>
+      </label>
+
+      <label class="field">
+        <span>Nom</span>
+        <input name="last_name" value="{{ user.last_name }}" required>
+      </label>
+    </div>
+
+    <label class="field">
+      <span>Email</span>
+      <input name="email" type="email" value="{{ user.email }}" required>
+    </label>
+
+    <div class="row2">
+      <label class="field">
+        <span>Nouveau mot de passe</span>
+        <input name="new_password" type="password" autocomplete="new-password" placeholder="(optionnel)">
+      </label>
+      <label class="field">
+        <span>Confirmation</span>
+        <input name="new_password_confirm" type="password" autocomplete="new-password" placeholder="(optionnel)">
+      </label>
+    </div>
+
+    <label class="field">
+      <span>Avatar</span>
+      <input name="avatar" type="file" accept=".png,.jpg,.jpeg,.webp">
+      <small>png/jpg/jpeg/webp</small>
+    </label>
+
+    <button class="btn primary" type="submit">Enregistrer</button>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% set title = "Accueil" %}
+
+{% block content %}
+<section class="card">
+  <div class="profile-hero">
+    <img class="avatar" src="{{ avatar }}" alt="Avatar">
+    <div class="hero-text">
+      <h1>Salut {{ user.first_name or "toi" }} 👋</h1>
+      <p>Bienvenue dans ton extranet. Ici c’est propre, rapide, et sans framework côté front.</p>
+      <div class="chips">
+        <span class="chip">Session active</span>
+        <span class="chip">MySQL</span>
+        <span class="chip">phpMyAdmin</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="grid2">
+  <a class="card linkcard" href="{{ url_for('profile') }}">
+    <h2>Profil</h2>
+    <p>Nom, prénom, email, mot de passe, avatar.</p>
+    <span class="cta">Éditer →</span>
+  </a>
+  <a class="card linkcard" href="{{ url_for('prices_page') }}">
+    <h2>Prix</h2>
+    <p>Liste + création + suppression de couples libellé/prix.</p>
+    <span class="cta">Gérer →</span>
+  </a>
+</section>
+{% endblock %}

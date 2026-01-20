@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% set title = "Connexion" %}
+
+{% block content %}
+<section class="card card-wide">
+  <div class="card-head">
+    <h1>Connexion</h1>
+    <p>Entre ton email et ton mot de passe.</p>
+  </div>
+
+  <form method="post" class="form">
+    <label class="field">
+      <span>Email</span>
+      <input name="email" type="email" autocomplete="username" required placeholder="admin@local">
+    </label>
+
+    <label class="field">
+      <span>Mot de passe</span>
+      <input name="password" type="password" autocomplete="current-password" required placeholder="••••••••">
+    </label>
+
+    <button class="btn primary" type="submit">Se connecter</button>
+
+    <div class="hint">
+      Compte seed (par défaut) : <code>admin@local</code> / <code>Admin123!</code>
+    </div>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% set title = "Prix" %}
+
+{% block content %}
+<section class="card card-wide">
+  <div class="card-head">
+    <h1>Prix</h1>
+    <p>Crée et supprime des couples <strong>libellé / prix</strong>.</p>
+  </div>
+
+  <form method="post" action="{{ url_for('prices_create') }}" class="form form-inline">
+    <label class="field">
+      <span>Libellé</span>
+      <input name="label" required placeholder="Ex: Abonnement Pro">
+    </label>
+
+    <label class="field">
+      <span>Prix (€)</span>
+      <input name="price" required inputmode="decimal" placeholder="19.99">
+    </label>
+
+    <button class="btn primary" type="submit">Ajouter</button>
+  </form>
+
+  <div class="table">
+    <div class="trow thead">
+      <div>Libellé</div>
+      <div>Prix</div>
+      <div></div>
+    </div>
+
+    {% for it in items %}
+      <div class="trow" data-price-id="{{ it.id }}">
+        <div class="label">{{ it.label }}</div>
+        <div class="price">{{ "%.2f"|format(it.price) }} €</div>
+        <div class="actions">
+          <button class="btn ghost danger js-delete" type="button">Supprimer</button>
+        </div>
+      </div>
+    {% else %}
+      <div class="empty">
+        Rien pour l’instant. Ajoute ton premier prix 👇
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
