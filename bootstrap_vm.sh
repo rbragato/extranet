@@ -27,10 +27,30 @@ fi
 echo "[2/4] Go to project dir..."
 cd "$APP_DIR"
 
-echo "[3/4] Ensure .env..."
+echo "[3/4] Creating .env if missing..."
+
 if [ ! -f ".env" ]; then
-  cp .env.example .env
+cat > .env <<EOF
+# Flask
+SECRET_KEY=dev-secret-key
+
+# MySQL
+MYSQL_HOST=db
+MYSQL_PORT=3306
+MYSQL_DATABASE=extranet
+MYSQL_USER=extranet_user
+MYSQL_PASSWORD=extranet_pass
+MYSQL_ROOT_PASSWORD=rootpass
+
+# Seed admin
+SEED_ADMIN_EMAIL=admin@local
+SEED_ADMIN_PASSWORD=Admin123!
+SEED_ADMIN_FIRSTNAME=Admin
+SEED_ADMIN_LASTNAME=Local
+EOF
+echo ".env generated"
 fi
+
 
 echo "[4/4] Build + run..."
 sudo docker compose up -d --build
