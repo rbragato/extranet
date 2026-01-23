@@ -7,6 +7,10 @@
     <h1>Prix</h1>
     <p>Crée et supprime des couples <strong>libellé / prix</strong>.</p>
   </div>
+  <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+    <a class="btn ghost" href="{{ url_for('prices_invoice_pdf') }}">Télécharger PDF</a>
+  </div>
+
 
   <form method="post" action="{{ url_for('prices_create') }}" class="form form-inline">
     <label class="field">

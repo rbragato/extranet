@@ -2,6 +2,10 @@ import os
 import uuid
 from decimal import Decimal, InvalidOperation
 
+from io import BytesIO
+from flask import send_file
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
 from dotenv import load_dotenv
 from flask import (
     Flask, render_template, request, redirect, url_for, session, flash, jsonify
@@ -238,6 +242,89 @@ def ensure_default_avatar_file():
   <path d="M52 220c10-44 46-72 76-72s66 28 76 72" fill="rgba(255,255,255,0.85)"/>
 </svg>""")
 
+@app.get("/prices/invoice.pdf")
+@login_required
+def prices_invoice_pdf():
+    db = SessionLocal()
+    try:
+        user = current_user(db)
+
+        items = db.execute(
+            select(PriceItem)
+            .where(PriceItem.group_id == user.group_id)
+            .order_by(PriceItem.created_at.desc())
+        ).scalars().all()
+
+        buffer = BytesIO()
+        c = canvas.Canvas(buffer, pagesize=A4)
+        width, height = A4
+
+        # Header
+        y = height - 60
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(50, y, "Facture - Liste des prix")
+        y -= 22
+
+        c.setFont("Helvetica", 10)
+        c.drawString(50, y, f"Client: {user.first_name} {user.last_name} ({user.email})")
+        y -= 14
+        c.drawString(50, y, f"Groupe ID: {user.group_id}")
+        y -= 22
+
+        # Table header
+        c.setFont("Helvetica-Bold", 11)
+        c.drawString(50, y, "Libellé")
+        c.drawRightString(width - 50, y, "Prix (€)")
+        y -= 12
+        c.line(50, y, width - 50, y)
+        y -= 18
+
+        # Rows
+        total = Decimal("0.00")
+        c.setFont("Helvetica", 11)
+
+        for it in items:
+            # nouvelle page si besoin
+            if y < 80:
+                c.showPage()
+                y = height - 60
+                c.setFont("Helvetica-Bold", 11)
+                c.drawString(50, y, "Libellé")
+                c.drawRightString(width - 50, y, "Prix (€)")
+                y -= 12
+                c.line(50, y, width - 50, y)
+                y -= 18
+                c.setFont("Helvetica", 11)
+
+            label = (it.label or "")[:80]
+            price = Decimal(it.price)
+            total += price
+
+            c.drawString(50, y, label)
+            c.drawRightString(width - 50, y, f"{price:.2f}")
+            y -= 16
+
+        # Total
+        y -= 8
+        c.line(50, y, width - 50, y)
+        y -= 18
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(50, y, "TOTAL")
+        c.drawRightString(width - 50, y, f"{total:.2f} €")
+
+        c.showPage()
+        c.save()
+        buffer.seek(0)
+
+        filename = "facture_prix.pdf"
+        return send_file(
+            buffer,
+            as_attachment=True,
+            download_name=filename,
+            mimetype="application/pdf",
+        )
+    finally:
+        db.close()
 
 if __name__ == "__main__":
     # pour docker
