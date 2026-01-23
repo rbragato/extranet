@@ -162,7 +162,9 @@ def prices_page():
     try:
         user = current_user(db)
         items = db.execute(
-            select(PriceItem).where(PriceItem.owner_id == user.id).order_by(PriceItem.created_at.desc())
+            select(PriceItem)
+            .where(PriceItem.group_id == user.group_id)
+            .order_by(PriceItem.created_at.desc())
         ).scalars().all()
         return render_template("prices.html", user=user, avatar=avatar_url(user), items=items)
     finally:
@@ -191,7 +193,12 @@ def prices_create():
     db = SessionLocal()
     try:
         user = current_user(db)
-        db.add(PriceItem(label=label, price=price, owner_id=user.id))
+        db.add(PriceItem(
+            label=label,
+            price=price,
+            group_id=user.group_id,
+            created_by_user_id=user.id
+        ))
         db.commit()
         flash("Prix ajouté.", "ok")
         return redirect(url_for("prices_page"))
@@ -205,8 +212,9 @@ def prices_delete(item_id: int):
     try:
         user = current_user(db)
         item = db.get(PriceItem, item_id)
-        if not item or item.owner_id != user.id:
+        if not item or item.group_id != user.group_id:
             return jsonify({"ok": False, "error": "Not found"}), 404
+
 
         db.delete(item)
         db.commit()

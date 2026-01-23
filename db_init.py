@@ -1,9 +1,9 @@
 import os
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from werkzeug.security import generate_password_hash
 
-from models import Base, User
+from models import Base, User, Group
 
 def db_url_from_env() -> str:
     host = os.getenv("MYSQL_HOST", "db")
@@ -20,22 +20,37 @@ def init_db():
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    seed_email = os.getenv("SEED_ADMIN_EMAIL", "admin@local").strip().lower()
-    seed_password = os.getenv("SEED_ADMIN_PASSWORD", "Admin123!")
-    seed_first = os.getenv("SEED_ADMIN_FIRSTNAME", "Admin")
-    seed_last = os.getenv("SEED_ADMIN_LASTNAME", "Local")
+    # 1) Ensure groups
+    def get_or_create_group(name: str) -> Group:
+        g = session.execute(select(Group).where(Group.name == name)).scalar_one_or_none()
+        if not g:
+            g = Group(name=name)
+            session.add(g)
+            session.commit()
+        return g
 
-    exists = session.query(User).filter(User.email == seed_email).first()
-    if not exists:
-        u = User(
-            email=seed_email,
-            password_hash=generate_password_hash(seed_password),
-            first_name=seed_first,
-            last_name=seed_last,
-            avatar_filename=None,
-        )
-        session.add(u)
-        session.commit()
+    gA = get_or_create_group("GroupeA")
+    gB = get_or_create_group("GroupeB")
+
+    # 2) Ensure users
+    def ensure_user(email: str, password: str, first: str, last: str, group: Group):
+        email = email.strip().lower()
+        u = session.execute(select(User).where(User.email == email)).scalar_one_or_none()
+        if not u:
+            u = User(
+                email=email,
+                password_hash=generate_password_hash(password),
+                first_name=first,
+                last_name=last,
+                avatar_filename=None,
+                group_id=group.id
+            )
+            session.add(u)
+            session.commit()
+
+    ensure_user("user1@demo.fr", "user1@demo.fr", "User", "One", gA)
+    ensure_user("user2@demo.fr", "user2@demo.fr", "User", "Two", gB)
+    ensure_user("user3@demo.fr", "user3@demo.fr", "User", "Three", gA)
 
     session.close()
     engine.dispose()

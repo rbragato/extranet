@@ -2,6 +2,9 @@
 {% set title = "Accueil" %}
 
 {% block content %}
+<div class="chips">
+  <span class="chip">Groupe: {{ user.group.name }}</span>
+</div>
 <section class="card">
   <div class="profile-hero">
     <img class="avatar" src="{{ avatar }}" alt="Avatar">
