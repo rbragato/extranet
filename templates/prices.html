@@ -8,8 +8,30 @@
     <p>Crée et supprime des couples <strong>libellé / prix</strong>.</p>
   </div>
   <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
-    <a class="btn ghost" href="{{ url_for('prices_invoice_pdf') }}">Télécharger PDF</a>
+  <a class="btn ghost" href="{{ url_for('prices_invoice_pdf') }}">Télécharger PDF</a>
+  <button class="btn ghost" id="btnFriendPrices" type="button">
+    Charger prix publics (10.1.0.3)
+  </button>
+</div>
+
+<div id="friendPricesBox" class="card" style="margin-top:12px; display:none;">
+  <div class="card-head" style="padding:0; margin-bottom:10px;">
+    <h2 style="margin:0; font-size:18px;">Prix publics de LWOUIS</h2>
+    <p style="margin:6px 0 0; color:rgba(255,255,255,.66);">Source: 10.1.0.3/prixpublic</p>
   </div>
+
+  <div id="friendPricesStatus" style="color:rgba(255,255,255,.66); font-size:14px;"></div>
+
+  <div class="table" style="margin-top:10px;">
+    <div class="trow thead">
+      <div>Article</div>
+      <div>Prix</div>
+      <div></div>
+    </div>
+    <div id="friendPricesRows"></div>
+  </div>
+</div>
+
 
 
   <form method="post" action="{{ url_for('prices_create') }}" class="form form-inline">

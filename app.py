@@ -4,7 +4,7 @@ from decimal import Decimal, InvalidOperation
 import json
 import urllib.request
 import urllib.error
-
+import ssl
 from io import BytesIO
 from flask import send_file
 from reportlab.lib.pagesizes import A4
@@ -356,6 +356,57 @@ def pricepublic(user_id: int):
     finally:
         db.close()
         
+        
+@app.get("/prices/public/friend")
+@login_required
+def prices_public_friend():
+    import json
+    import urllib.request
+    import urllib.error
+
+    url = "https://10.1.0.3/prixpublic"
+
+    def fetch(with_verify: bool):
+        ctx = None
+        if not with_verify:
+            ctx = ssl._create_unverified_context()  # MVP: accepte cert self-signed
+
+        req = urllib.request.Request(
+            url,
+            headers={"Accept": "application/json", "User-Agent": "extranet/1.0"},
+            method="GET",
+        )
+        with urllib.request.urlopen(req, timeout=8, context=ctx) as resp:
+            raw = resp.read().decode("utf-8")
+            return json.loads(raw)
+
+    try:
+        # 1) essai normal (cert vérifié)
+        data = fetch(with_verify=True)
+    except Exception as e1:
+        # 2) essai sans vérification SSL (si cert auto-signé)
+        try:
+            data = fetch(with_verify=False)
+        except Exception as e2:
+            return jsonify({
+                "ok": False,
+                "error": "Friend service unreachable",
+                "detail": str(e2),
+            }), 502
+
+    if not isinstance(data, list):
+        return jsonify({"ok": False, "error": "Bad format"}), 502
+
+    cleaned = []
+    for item in data:
+        if isinstance(item, dict):
+            article = item.get("article")
+            prix = item.get("prix")
+            if isinstance(article, str) and isinstance(prix, (int, float)):
+                cleaned.append({"article": article, "prix": prix})
+
+    return jsonify({"ok": True, "items": cleaned})
+
 if __name__ == "__main__":
     # pour docker
     ensure_default_avatar_file()
