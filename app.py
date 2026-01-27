@@ -326,6 +326,33 @@ def prices_invoice_pdf():
     finally:
         db.close()
 
+
+@app.get("/pricepublic/<int:user_id>")
+def pricepublic(user_id: int):
+    db = SessionLocal()
+    try:
+        user = db.get(User, user_id)
+        if not user:
+            return jsonify({"ok": False, "error": "User not found"}), 404
+
+        items = db.execute(
+            select(PriceItem)
+            .where(PriceItem.group_id == user.group_id)
+            .order_by(PriceItem.created_at.desc())
+        ).scalars().all()
+
+        return jsonify({
+            "ok": True,
+            "user_id": user.id,
+            "group_id": user.group_id,
+            "items": [
+                {"name": it.label, "price": float(it.price)}
+                for it in items
+            ]
+        })
+    finally:
+        db.close()
+        
 if __name__ == "__main__":
     # pour docker
     ensure_default_avatar_file()
